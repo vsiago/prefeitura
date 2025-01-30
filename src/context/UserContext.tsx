@@ -8,6 +8,7 @@ interface User {
   email: string;
   name: string;
   token: string;
+  role: string
 }
 
 interface AuthContextProps {
@@ -70,7 +71,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     try {
       if (!email || !password) {
         alert("Por favor, preencha todos os campos");
-        return;
+        return
       }
 
       const response = await fetch("http://localhost:3333/api/users/login", {
@@ -91,9 +92,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         const decoded: any = jwtDecode(data.token);
 
         const userData: User = {
-          email: decoded.email,  // Certifique-se de que 'decoded.email' existe
-          name: decoded.name,    // Certifique-se de que 'decoded.name' existe
+          email: decoded.email, // Certifique-se de que 'decoded.email' existe
+          name: decoded.name, // Certifique-se de que 'decoded.name' existe
           token: data.token,
+          role: decoded.role
         };
 
         // Salva todos os dados do usuário no localStorage

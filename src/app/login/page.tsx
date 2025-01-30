@@ -4,25 +4,39 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import Image from "next/image";
-import { User, Eye, EyeOff } from "lucide-react";
+import { User, Eye, EyeOff, Loader2 } from "lucide-react";
 import { useState, useContext } from "react";
 import { AuthContext } from "@/context/UserContext";
+import { Toaster, toast } from "sonner";
 
 export default function Login() {
   const [showPassword, setShowPassword] = useState(false);
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
+  const [loading, setLoading] = useState(false);
   const auth = useContext(AuthContext);
 
   if (!auth) return null; // Verificação de segurança
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
-    await auth.login(username, password);
+    setLoading(true);
+    try {
+      await auth.login(username, password);
+      toast.success("Login realizado com sucesso!");
+      setTimeout(() => {
+        // router.push("/dashboard");
+      }, 2000); // Tempo de espera antes de redirecionar
+    } catch (error) {
+      toast.error("Erro ao fazer login. Verifique suas credenciais.");
+    } finally {
+      setTimeout(() => setLoading(false), 1500); // Delay para melhorar UX
+    }
   };
 
   return (
     <main className="min-h-screen bg-bg60 flex items-center justify-center">
+      <Toaster />
       <Card className="w-full sm:max-w-[60%] md:max-w-[50%] lg:max-w-[30%] bg-white/50 border-2 border-white py-10">
         <CardHeader className="text-center">
           <Image
@@ -71,8 +85,13 @@ export default function Login() {
                 </button>
               </div>
             </div>
-            <Button type="submit" size={"lg"} className="w-full my-5 mt-20">
-              Entrar
+            <Button
+              type="submit"
+              size="lg"
+              className={`w-full my-5 mt-20 ${loading ? "bg-green-500" : ""}`}
+              disabled={loading}
+            >
+              {loading ? <Loader2 className="animate-spin w-5 h-5" /> : "Entrar"}
             </Button>
           </form>
         </CardContent>

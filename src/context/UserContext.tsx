@@ -5,7 +5,7 @@ import { jwtDecode } from "jwt-decode";
 import Cookies from "js-cookie"; // Manipular cookies
 
 interface User {
-  email: string;
+  data: string;
   name: string;
   token: string;
   role: string
@@ -48,10 +48,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     if (typeof window !== "undefined") {
       const token = Cookies.get("user");
       const storedUser = localStorage.getItem("userData");
-  
+
       if (token && storedUser) {
         const parsedUser: User = JSON.parse(storedUser);
-  
+
         if (!isTokenExpired(token)) {
           setUser(parsedUser); // Atualiza o estado
           return;
@@ -60,16 +60,16 @@ export function AuthProvider({ children }: { children: ReactNode }) {
           localStorage.removeItem("userData");
         }
       }
-  
+
       router.push("/login");
     }
   }, []);
-  
+
 
   // Função de login
-  async function login(email: string, password: string) {
+  async function login(data: string, password: string) {
     try {
-      if (!email || !password) {
+      if (!data || !password) {
         alert("Por favor, preencha todos os campos");
         return
       }
@@ -77,32 +77,32 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       const response = await fetch("http://localhost:3333/api/users/login", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ email, password }),
+        body: JSON.stringify({ data, password }),
       });
 
       if (!response.ok) {
         throw new Error("Credenciais inválidas");
       }
 
-      const data = await response.json();
+      const dataResponse = await response.json();
 
 
-      if (data.token) {
+      if (dataResponse.token) {
         // Decodifica o token para obter os dados do usuário
-        const decoded: any = jwtDecode(data.token);
+        const decoded: any = jwtDecode(dataResponse.token);
 
         const userData: User = {
-          email: decoded.email, // Certifique-se de que 'decoded.email' existe
+          data: decoded.email, // Certifique-se de que 'decoded.email' existe
           name: decoded.name, // Certifique-se de que 'decoded.name' existe
-          token: data.token,
+          token: decoded.token,
           role: decoded.role
         };
 
         // Salva todos os dados do usuário no localStorage
         localStorage.setItem("userData", JSON.stringify(userData));
-      
+
         // Salva o token nos cookies
-        Cookies.set("user", data.token, { expires: 1, path: "/" });
+        Cookies.set("user", decoded.token, { expires: 1, path: "/" });
         setUser(userData);  // Atualiza o estado do usuário
         router.push("/home");
       } else {
